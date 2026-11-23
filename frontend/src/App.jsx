@@ -196,13 +196,6 @@ export default function App() {
               Optimizador de Investigación de Operaciones
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Tecnológico Nacional de México • Campus Tuxtla Gutiérrez — React + FastAPI + NumPy
-          </p>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-slate-600 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm self-start sm:self-auto">
-          <span className={`w-2 h-2 rounded-full ${apiOnline ? 'bg-emerald-500' : apiOnline === false ? 'bg-rose-500' : 'bg-amber-400'}`} />
-          <span>{apiOnline ? 'API FastAPI Conectada' : apiOnline === false ? 'API FastAPI Desconectada' : 'Verificando API...'}</span>
         </div>
       </header>
 
@@ -237,10 +230,6 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <button type="button" onClick={clearSimplex} className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200">
                   Limpiar
-                </button>
-                <button type="button" onClick={loadSimplexExample} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200">
-                  <Download className="w-3.5 h-3.5" />
-                  Cargar Ejemplo Balanceado
                 </button>
               </div>
             </div>
@@ -476,10 +465,6 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <button type="button" onClick={clearDemax} className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200">
                   Limpiar
-                </button>
-                <button type="button" onClick={loadDemaxExample} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200">
-                  <Download className="w-3.5 h-3.5" />
-                  Cargar Ejemplo 1 (Tec Tuxtla - 4×4)
                 </button>
               </div>
             </div>
