@@ -196,6 +196,13 @@ export default function App() {
               Optimizador de Investigación de Operaciones
             </h1>
           </div>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Tecnológico Nacional de México • Campus Tuxtla Gutiérrez — React + FastAPI + NumPy
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-slate-600 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm self-start sm:self-auto">
+          <span className={`w-2 h-2 rounded-full ${apiOnline ? 'bg-emerald-500' : apiOnline === false ? 'bg-rose-500' : 'bg-amber-400'}`} />
+          <span>{apiOnline ? 'API FastAPI Conectada' : apiOnline === false ? 'API FastAPI Desconectada' : 'Verificando API...'}</span>
         </div>
       </header>
 
@@ -230,6 +237,10 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <button type="button" onClick={clearSimplex} className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200">
                   Limpiar
+                </button>
+                <button type="button" onClick={loadSimplexExample} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200">
+                  <Download className="w-3.5 h-3.5" />
+                  Cargar Ejemplo Balanceado
                 </button>
               </div>
             </div>
@@ -466,6 +477,10 @@ export default function App() {
                 <button type="button" onClick={clearDemax} className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200">
                   Limpiar
                 </button>
+                <button type="button" onClick={loadDemaxExample} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200">
+                  <Download className="w-3.5 h-3.5" />
+                  Cargar Ejemplo 1 (Tec Tuxtla - 4×4)
+                </button>
               </div>
             </div>
 
@@ -596,37 +611,174 @@ export default function App() {
           </div>
 
           {demaxResult && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4 border-b border-slate-100">
-                <h3 className="text-lg font-bold text-slate-900">Solución DEMAXMIN (Costo Total: ${fmt(demaxResult.response.costo_total_z)})</h3>
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800">
-                  {demaxResult.response.nota_balanceo}
-                </span>
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4 border-b border-slate-100">
+                  <h3 className="text-lg font-bold text-slate-900">Solución Final DEMAXMIN (Costo Total: ${fmt(demaxResult.response.costo_total_z)})</h3>
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800">
+                    {demaxResult.response.nota_balanceo}
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-slate-200">
+                  <table className="w-full text-xs sm:text-sm text-center border-collapse">
+                    <thead className="bg-slate-100 text-slate-700 font-semibold">
+                      <tr>
+                        <th className="px-3 py-2.5 border-b border-r border-slate-200 text-left">Origen \ Destino</th>
+                        {demaxResult.response.nombres_columnas.map((col) => (
+                          <th key={col} className="px-3 py-2.5 border-b border-slate-200">{col}</th>
+                        ))}
+                        <th className="px-3 py-2.5 border-b border-l border-slate-200 bg-emerald-50 text-emerald-800">Oferta</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {demaxResult.response.nombres_filas.map((rowName, i) => (
+                        <tr key={rowName}>
+                          <td className="px-3 py-2.5 border-r border-slate-200 font-semibold text-left bg-slate-50/50">{rowName}</td>
+                          {demaxResult.response.matriz_asignacion[i].map((val, j) => (
+                            <td key={j} className={`px-3 py-2.5 ${val > 0 ? 'bg-indigo-50 font-bold text-indigo-800' : 'text-slate-400'}`}>
+                              {fmt(val)} <span className="block text-[10px] text-slate-400 font-normal">c={fmt(demaxResult.response.matriz_costos[i][j])}</span>
+                            </td>
+                          ))}
+                          <td className="px-3 py-2.5 border-l border-slate-200 font-bold text-emerald-700 bg-emerald-50/30">
+                            {fmt(demaxResult.response.vector_oferta[i])}
+                          </td>
+                        </tr>
+                      ))}
+                      <tr className="bg-sky-50/40 font-bold text-sky-800">
+                        <td className="px-3 py-2.5 border-r border-slate-200 text-left">Demanda</td>
+                        {demaxResult.response.vector_demanda.map((d, j) => (
+                          <td key={j} className="px-3 py-2.5">{fmt(d)}</td>
+                        ))}
+                        <td className="px-3 py-2.5 border-l border-slate-200 text-slate-700">
+                          {fmt(demaxResult.response.vector_oferta.reduce((a, b) => a + b, 0))}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
-              <div className="overflow-x-auto rounded-xl border border-slate-200">
-                <table className="w-full text-xs sm:text-sm text-center border-collapse">
-                  <thead className="bg-slate-100 text-slate-700 font-semibold">
-                    <tr>
-                      <th className="px-3 py-2.5 border-b border-r border-slate-200 text-left">Origen \ Destino</th>
-                      {demaxResult.response.nombres_columnas.map((col) => (
-                        <th key={col} className="px-3 py-2.5 border-b border-slate-200">{col}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {demaxResult.response.nombres_filas.map((rowName, i) => (
-                      <tr key={rowName}>
-                        <td className="px-3 py-2.5 border-r border-slate-200 font-semibold text-left bg-slate-50/50">{rowName}</td>
-                        {demaxResult.response.matriz_asignacion[i].map((val, j) => (
-                          <td key={j} className={`px-3 py-2.5 ${val > 0 ? 'bg-indigo-50 font-bold text-indigo-800' : 'text-slate-400'}`}>
-                            {fmt(val)} <span className="block text-[10px] text-slate-400 font-normal">c={fmt(demaxResult.response.matriz_costos[i][j])}</span>
-                          </td>
-                        ))}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+                <h4 className="text-base font-bold text-slate-900 mb-3">Resumen de Iteraciones (Heurística DEMAXMIN)</h4>
+                <div className="overflow-x-auto rounded-xl border border-slate-200">
+                  <table className="w-full text-xs sm:text-sm text-center border-collapse">
+                    <thead className="bg-slate-100 text-slate-700 font-semibold">
+                      <tr>
+                        <th className="px-3 py-2 border-b border-slate-200">Paso</th>
+                        <th className="px-3 py-2 border-b border-slate-200">Columna k (Máx Demanda)</th>
+                        <th className="px-3 py-2 border-b border-slate-200">Fila m (Mín Costo)</th>
+                        <th className="px-3 py-2 border-b border-slate-200">Asignación</th>
+                        <th className="px-3 py-2 border-b border-slate-200">Costo Parcial</th>
+                        <th className="px-3 py-2 border-b border-slate-200">Z Acumulado</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {demaxResult.response.pasos.map((s) => (
+                        <tr key={s.paso} className="hover:bg-slate-50">
+                          <td className="px-3 py-2 font-bold text-slate-700">{s.paso}</td>
+                          <td className="px-3 py-2 font-medium text-indigo-700">
+                            {s.columna} <span className="text-xs text-slate-400">(D={fmt(s.demanda_activa_col)})</span>
+                          </td>
+                          <td className="px-3 py-2 font-medium text-emerald-700">
+                            {s.fila} <span className="text-xs text-slate-400">(c={fmt(s.costo_minimo)})</span>
+                          </td>
+                          <td className="px-3 py-2 font-bold text-slate-900">{fmt(s.cantidad)}</td>
+                          <td className="px-3 py-2 text-slate-600">
+                            {fmt(s.cantidad)} × {fmt(s.costo_minimo)} = <strong>{fmt(s.costo_parcial)}</strong>
+                          </td>
+                          <td className="px-3 py-2 font-bold text-indigo-900">{fmt(s.z_acumulado)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-base font-bold text-slate-800 px-1">Tablas Paso a Paso (Matrices por Iteración)</h4>
+                {demaxResult.response.pasos.map((s) => (
+                  <div key={s.paso} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                      <h5 className="text-sm font-bold text-slate-800">
+                        Paso {s.paso}: Asignar {fmt(s.cantidad)} en ({s.fila}, {s.columna})
+                      </h5>
+                      <span className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200">
+                        Máx Demanda: {s.columna} ({fmt(s.demanda_activa_col)}) | Mín Costo: {s.fila} (c={fmt(s.costo_minimo)}) | Z = ${fmt(s.z_acumulado)}
+                      </span>
+                    </div>
+                    <div className="overflow-x-auto rounded-xl border border-slate-200">
+                      <table className="w-full text-xs sm:text-sm text-center border-collapse">
+                        <thead className="bg-slate-100 text-slate-700 font-semibold">
+                          <tr>
+                            <th className="px-3 py-2 border-b border-r border-slate-200 text-left">Origen \ Destino</th>
+                            {demaxResult.response.nombres_columnas.map((col, j) => (
+                              <th
+                                key={col}
+                                className={`px-3 py-2 border-b border-slate-200 ${
+                                  j === s.col_idx ? 'bg-indigo-100 text-indigo-900' : ''
+                                }`}
+                              >
+                                {col}
+                              </th>
+                            ))}
+                            <th className="px-3 py-2 border-b border-l border-slate-200 bg-emerald-50 text-emerald-800">
+                              Oferta Rest.
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                          {demaxResult.response.nombres_filas.map((rowName, i) => {
+                            const isSelectedRow = i === s.fila_idx
+                            return (
+                              <tr key={rowName} className={isSelectedRow ? 'bg-amber-50/40' : ''}>
+                                <td className="px-3 py-2 border-r border-slate-200 font-semibold text-left bg-slate-50/50">
+                                  {rowName}
+                                </td>
+                                {s.matriz_asignacion[i].map((val, j) => {
+                                  const isCurrentCell = i === s.fila_idx && j === s.col_idx
+                                  const isSelectedCol = j === s.col_idx
+                                  let cellClass = 'text-slate-400'
+                                  if (isCurrentCell) {
+                                    cellClass = 'bg-amber-300/80 font-bold text-slate-900 ring-2 ring-inset ring-amber-500'
+                                  } else if (val > 0) {
+                                    cellClass = 'bg-indigo-50 font-bold text-indigo-800'
+                                  } else if (isSelectedCol) {
+                                    cellClass = 'bg-indigo-50/40 text-slate-400'
+                                  }
+                                  return (
+                                    <td key={j} className={`px-3 py-2 ${cellClass}`}>
+                                      {fmt(val)}
+                                      <span className="block text-[10px] text-slate-500 font-normal">
+                                        c={fmt(demaxResult.response.matriz_costos[i][j])}
+                                      </span>
+                                    </td>
+                                  )
+                                })}
+                                <td className={`px-3 py-2 border-l border-slate-200 font-bold ${
+                                  s.oferta_restante[i] <= 1e-9 ? 'text-slate-400 bg-slate-50' : 'text-emerald-700 bg-emerald-50/30'
+                                }`}>
+                                  {fmt(s.oferta_restante[i])}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                          <tr className="bg-sky-50/40 font-bold text-sky-800">
+                            <td className="px-3 py-2 border-r border-slate-200 text-left">Demanda Rest.</td>
+                            {s.demanda_restante.map((d, j) => (
+                              <td key={j} className={`px-3 py-2 ${d <= 1e-9 ? 'text-slate-400' : 'text-sky-800'}`}>
+                                {fmt(d)}
+                              </td>
+                            ))}
+                            <td className="px-3 py-2 border-l border-slate-200 text-slate-600">
+                              ${fmt(s.z_acumulado)}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

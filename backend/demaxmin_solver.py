@@ -47,10 +47,6 @@ def resolver_demaxmin(
     oferta_restante = vector_oferta.copy()
     demanda_restante = vector_demanda.copy()
 
-    # Penalizaciones (estructura descriptiva del modelo)
-    penalizaciones_fila = np.zeros(filas, dtype=float)
-    penalizaciones_col = np.zeros(cols, dtype=float)
-
     costo_total_z = 0.0
     pasos: List[Dict[str, Any]] = []
     paso_num = 1
@@ -77,6 +73,8 @@ def resolver_demaxmin(
 
         pasos.append({
             "paso": paso_num,
+            "col_idx": k,
+            "fila_idx": m_idx,
             "columna": nombres_cols[k],
             "demanda_activa_col": round(max_demanda, 4),
             "fila": nombres_filas[m_idx],
@@ -84,6 +82,9 @@ def resolver_demaxmin(
             "cantidad": round(cant, 4),
             "costo_parcial": round(costo_parcial, 4),
             "z_acumulado": round(costo_total_z, 4),
+            "matriz_asignacion": np.round(matriz_asignacion, 4).tolist(),
+            "oferta_restante": np.round(oferta_restante, 4).tolist(),
+            "demanda_restante": np.round(demanda_restante, 4).tolist(),
         })
         paso_num += 1
 
