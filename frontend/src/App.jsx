@@ -245,7 +245,6 @@ export default function App() {
                   className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-800"
                 >
                   <option value="MAX">Maximizar Z</option>
-                  <option value="MIN">Minimizar Z</option>
                 </select>
               </div>
 
